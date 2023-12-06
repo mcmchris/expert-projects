@@ -323,6 +323,9 @@ python3 make-page.py
 ```
 ![Preview Web Page script command](.gitbook/assets/gesture-appliances-control-brainchip/preview-web.png)
 
+Finally, you will be able to see the camera preview alongside the inference results organized in the following order: `AC`, `Light`, `Other` and `TV`.
+
+![Project running | Inference results](.gitbook/assets/gesture-appliances-control-brainchip/results-preview.png)
 
 
 ## Demo
