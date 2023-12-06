@@ -312,6 +312,18 @@ python3 class-pose.py akida_model.fbz 0
 - `akida_model.fbz` is the Meta TF model name we downloaded from our Edge Impulse project.
 - `0` force the script to use the first camera on the available ones list.
 
+The project will start running and printing the inference results continuously in the terminal.
+
+![Project running and printing the results](.gitbook/assets/gesture-appliances-control-brainchip/running.png)
+
+To watch a preview of the camera feed, you can do it by opening a new `ssh` session and running the `make-page.py` script from the project directory:
+
+```bash
+python3 make-page.py
+```
+![Preview Web Page script command](.gitbook/assets/gesture-appliances-control-brainchip/preview-web.png)
+
+
 
 ## Demo
 
