@@ -20,7 +20,9 @@ This is why I thought "What if we could control the whole house with just gestur
 
 ## Hardware and Software Requirements
 
-To develop this project we will use a BrainChip Akida Development Kit and a Logitech BRIO 4K Webcam, together with an Edge Impulse Machine Learning model for pose identification.
+To develop this project we will use a __BrainChip Akida Development Kit__ and a __Logitech BRIO 4K Webcam__, together with an __Edge Impulse__ Machine Learning model for pose identification.
+
+![Hardware required for the project](.gitbook/assets/gesture-appliances-control-brainchip/hardware.png)
 
 ### Akida Dev Kit
 
@@ -30,7 +32,7 @@ Considering that our project will end up being one more smart device that we wil
 
 ### Software
 
-The whole system will be running independently identifying poses, if a desired pose is detected it will send an HTTP post to the Google Assistant SDK being hosted by a Raspberry Pi with Home Assistant OS. 
+The whole system will be running independently identifying poses, if a desired pose is detected it will send an HTTP request to the Google Assistant SDK being hosted by a Raspberry Pi with Home Assistant OS. 
 
 ## Setting up the Development Environment
 
@@ -50,15 +52,17 @@ Once inside you will be able to install some required dependencies:
 
 Running the built-in demos ensures us that the system already counts with its Akida package and the PCIe drivers for the AKD1000 but we can verify it by running the following commands:
 
-`pip show akida` will show the installed version.
-`lspci | grep Co-processor` will check if the PCIe card is plugged in correctly.
-`python3 --version` will check the installed Python version (3.8 is required).
+```bash
+pip show akida # will show the installed version.
+lspci | grep Co-processor # will check if the PCIe card is plugged in correctly.
+python3 --version # will check the installed Python version (3.8 is required).
+```
 
 ![Verifying packages](.gitbook/assets/gesture-appliances-control-brainchip/verifications.png)
 
 You will also need Node Js v14.x to be able to use the [Edge Impulse CLI](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-installation). Install it by running these commands:
 
-```
+```bash
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt-get install -y nodejs
 node -v
@@ -67,9 +71,9 @@ The last command should return the node version, v14 or above.
 
 Finally, let's install the [Linux Python SDK](https://docs.edgeimpulse.com/docs/edge-impulse-for-linux/linux-python-sdk), you just need to run these commands:
 
-```
-$ sudo apt-get install libatlas-base-dev libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev 
-$ pip3 install edge_impulse_linux -i https://pypi.python.org/simple
+```bash
+sudo apt-get install libatlas-base-dev libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev 
+pip3 install edge_impulse_linux -i https://pypi.python.org/simple
 ```
 
 ***As we are working with computer vision, we will need "opencv-python>=4.5.1.48, "PyAudio", "Psutil", and "Flask"***
@@ -106,7 +110,7 @@ In the left side menu, we navigate to **Impulse design** > **Create impulse** an
 
 Use this block to turn raw images into pose vectors, then pair it with an ML block to detect what a person is doing.
 
-PoseNet processing block is just enabled for Enterprise projects, if we want to use it on a Developer one, we need to locally run the block, for this, you must clone the [PoseNet block repository](https://github.com/edgeimpulse/pose-estimation-processing-block) and the README steps.
+PoseNet processing block is just enabled for Enterprise projects, if we want to use it on a Developer one, we need to locally run the block, for this, you must clone the [PoseNet block repository](https://github.com/edgeimpulse/pose-estimation-processing-block) and follow the __README__ steps.
 
 You will end up with an URL similar to "https://abe7-2001-1308-a2ca-4f00-e65f-1ff-fe27-d3aa.ngrok-free.app" hosting the processing block, click on **Add a processing block** > **Add custom block**, then paste the [**ngrok**](https://ngrok.com/) generated URL, and click on **Add block**.
 
@@ -126,42 +130,188 @@ Finally, we save the **Impulse design**, it should end up looking like this:
 
 After having designed the impulse, it's time to set the processing and learning blocks. **Pose estimation** block doesn't have any configurable parameters, so we just need to click on **Save parameters** and then **Generate features**. 
 
-In the classifier block define the following in settings:
+In the _classifier block_ define the following settings:
 
-- Number of training cycles: 200
-- Learning rate": 0.0005 
+- Number of training cycles: 100
+- Learning rate: 0.001 
 
 In the Neural network architecture, add 3 Dense layers with 35, 25 and 10 neurons respectively.
 
-![Neural network architecture](.gitbook/assets/gesture-appliances-control-brainchip/nn_arch.png)
+Here is the architecture expert mode code (you can copy and paste it from here):
 
-Click on the "train" button and wait for the model to be trained and the confusion matrix to show up.
+```python
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, InputLayer, Dropout, Conv1D, Conv2D, Flatten, Reshape, MaxPooling1D, MaxPooling2D, AveragePooling2D, Rescaling, BatchNormalization, Permute, ReLU, Softmax
+from tensorflow.keras.optimizers.legacy import Adam
+EPOCHS = args.epochs or 100
+LEARNING_RATE = args.learning_rate or 0.001
+# this controls the batch size, or you can manipulate the tf.data.Dataset objects yourself
+BATCH_SIZE = 32
+train_dataset = train_dataset.batch(BATCH_SIZE, drop_remainder=False)
+validation_dataset = validation_dataset.batch(BATCH_SIZE, drop_remainder=False)
+
+# model architecture
+model = Sequential()
+#model.add(Rescaling(7.5, 0))
+model.add(Dense(35,
+    activity_regularizer=tf.keras.regularizers.l1(0.00001)))
+model.add(ReLU())
+model.add(Dense(25,
+    activity_regularizer=tf.keras.regularizers.l1(0.00001)))
+model.add(ReLU())
+model.add(Dense(10,
+    activity_regularizer=tf.keras.regularizers.l1(0.00001)))
+model.add(ReLU())
+model.add(Dense(classes, name='y_pred'))
+model.add(Softmax())
+
+# this controls the learning rate
+opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.9, beta_2=0.999)
+callbacks.append(BatchLoggerCallback(BATCH_SIZE, train_sample_count, epochs=EPOCHS))
+
+# train the neural network
+model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+model.fit(train_dataset, epochs=EPOCHS, validation_data=validation_dataset, verbose=2, callbacks=callbacks)
+
+import tensorflow as tf
+
+
+def akida_quantize_model(
+    keras_model,
+    weight_quantization: int = 4,
+    activ_quantization: int = 4,
+    input_weight_quantization: int = 4,
+):
+    import cnn2snn
+
+    print("Performing post-training quantization...")
+    akida_model = cnn2snn.quantize(
+        keras_model,
+        weight_quantization=weight_quantization,
+        activ_quantization=activ_quantization,
+        input_weight_quantization=input_weight_quantization,
+    )
+    print("Performing post-training quantization OK")
+    print("")
+
+    return akida_model
+
+
+def akida_perform_qat(
+    akida_model,
+    train_dataset: tf.data.Dataset,
+    validation_dataset: tf.data.Dataset,
+    optimizer: str,
+    fine_tune_loss: str,
+    fine_tune_metrics: "list[str]",
+    callbacks,
+    stopping_metric: str = "val_accuracy",
+    fit_verbose: int = 2,
+    qat_epochs: int = 200,
+):
+    early_stopping = tf.keras.callbacks.EarlyStopping(
+        monitor=stopping_metric,
+        mode="max",
+        verbose=1,
+        min_delta=0,
+        patience=10,
+        restore_best_weights=True,
+    )
+    callbacks.append(early_stopping)
+
+    print("Running quantization-aware training...")
+    akida_model.compile(
+        optimizer=optimizer, loss=fine_tune_loss, metrics=fine_tune_metrics
+    )
+
+    akida_model.fit(
+        train_dataset,
+        epochs=qat_epochs,
+        verbose=fit_verbose,
+        validation_data=validation_dataset,
+        callbacks=callbacks,
+    )
+
+    print("Running quantization-aware training OK")
+    print("")
+
+    return akida_model
+
+
+akida_model = akida_quantize_model(model)
+akida_model = akida_perform_qat(
+    akida_model,
+    train_dataset=train_dataset,
+    validation_dataset=validation_dataset,
+    optimizer=opt,
+    fine_tune_loss='categorical_crossentropy',
+    fine_tune_metrics=['accuracy'],
+    callbacks=callbacks)
+```
+
+Click on the __Start training__ button and wait for the model to be trained and the confusion matrix to show up.
 
 ### Confusion Matrix 
 
 ![Confusion matrix results](.gitbook/assets/gesture-appliances-control-brainchip/confusion.png)
 
-## Model Testing 
+The results of the confusion matrix can be improved by adding more samples to the dataset.
 
-To test the model, we need to go back to our SSH connection with the device and download the model to run it locally, you can accomplish this by running this command:
+## Project Setup
 
-`edge-impulse-linux-runner`
+To be able to run the project, we need to go back to our SSH connection with the device and clone the project from the [Github repository](https://github.com/edgeimpulse/pose-akida-classification), for this, use the following command:
 
-It will ask you for your Edge Impulse account credentials, and then to select your project.
+```bash
+git clone https://github.com/edgeimpulse/pose-akida-classification.git
+```
+Install all the project requirements with the following command, and wait for the process to be done.
 
-![Confusion matrix results](.gitbook/assets/gesture-appliances-control-brainchip/model_test.png)
+```bash
+pip install -r requirements.txt
+```
+Install these other required packages with:
 
-After the model is downloaded, the device will stream a live classification preview on **http://<your_kit_IP:4912>** and start running the inferences.
-
-
+```bash
+apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+```
 
 ## Deployment
 
+Once the project is cloned locally in the Akida Development Kit, you can download the project model from Edge Impulse Studio by navigating to the **Dashboard** section and downloading the **MetaTF** `.fbz` file.
 
+![Downloading the project model](.gitbook/assets/gesture-appliances-control-brainchip/model-down.png)
 
-## Application Development
+Once downloaded, from the model path, open a new terminal and copy the model to the Dev Kit using `scp` command as follows:
+
+```bash
+scp <model file>.fbz ubuntu@<Device IP>:~ # command format
+scp akida_model.fbz ubuntu@10.0.0.154:~ # actual command in my case
+```
+_You will be asked for your Linux machine login password._
+
+Now, the model is on the Akida Dev Kit local storage `(/home/ubuntu)` and you can verify it by listing the directory content using `ls`.
+
+Move the model to the project directory with the following command:
+
+```bash
+mv akida_model.fbz ./pose-akida-classification/
+```
+Here we have the model on the project directory, so now everything is ready to be run.
+
+![Project directory](.gitbook/assets/gesture-appliances-control-brainchip/model-copy.png)
 
 ## Run Inferencing
+
+To run the project, type the following command:
+
+```bash
+python3 class-pose.py akida_model.fbz 0
+```
+- The first parameter `class-pose.py` is the project's main script to be run.
+- `akida_model.fbz` is the Meta TF model name we downloaded from our Edge Impulse project.
+- `0` force the script to use the first camera on the available ones list.
+
 
 ## Demo
 
