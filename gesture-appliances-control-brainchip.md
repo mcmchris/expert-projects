@@ -2,13 +2,13 @@
 description: Control your TV, Air Conditioner or Lightbulb by just pointing your finger at them, using the BrainChip AKD1000 achieving great accuracy and low power consumption.
 ---
 
-# Gesture Appliances Control with Pose Detection - BrainChip AK1000 
+# Gesture Appliances Control with Pose Detection - BrainChip AKD1000 
 
 Created By:
 Christopher Mendez
 
 Public Project Link:
-[https://studio.edgeimpulse.com/public/](https://studio.edgeimpulse.com/public/)
+[https://studio.edgeimpulse.com/public/319871/latest](https://studio.edgeimpulse.com/public/319871/latest)
 
 ## Introduction
 
@@ -16,7 +16,7 @@ Today more than ever we live with smart devices and personal assistants that wor
 
 Sometimes it can be inconvenient to have to ask a personal assistant to turn our appliances on or off. Because it's simply too late at night to be talking, or because we're watching our favorite movie and we don't want annoying audio interrupting us.
 
-This is why I thought "What if we could control the whole house with just gestures?" It would be amazing to just point to the air conditioner and have it turn on, turn off the light, and turn on our TV.
+This is why I thought "What if we could control the whole house with just gestures?" It would be amazing to just point to the air conditioner and turn it on, turn off the light, and turn on our TV.
 
 ## Hardware and Software Requirements
 
@@ -310,7 +310,7 @@ python3 class-pose.py akida_model.fbz 0
 ```
 - The first parameter `class-pose.py` is the project's main script to be run.
 - `akida_model.fbz` is the Meta TF model name we downloaded from our Edge Impulse project.
-- `0` force the script to use the first camera on the available ones list.
+- `0` force the script to use the first camera available.
 
 The project will start running and printing the inference results continuously in the terminal.
 
@@ -327,7 +327,35 @@ Finally, you will be able to see the camera preview alongside the inference resu
 
 ![Project running | Inference results](.gitbook/assets/gesture-appliances-control-brainchip/results-preview.png)
 
+## Google Assistant Setup
+
+For the actual appliance control, I used the __Google Assistant SDK__ integration for __Home Assistant__. Follow the [documentation](https://www.home-assistant.io/integrations/google_assistant_sdk) to configure it for your setup.
+
+***The Home Assistant is running on a separate Raspberry PI.***
+
+Once the integration is set, we can send `HTTP` requests to it with the following format:
+
+- URL: `http://<Raspberry Pi IP>:8123/api/services/google_assistant_sdk/send_text_command`
+- Headers:
+    - Authorization: "Bearer <authentication key>"
+    - Content-Type: "application/json"
+- Body: {"command":"turn on the light"}
+
+You must edit the `url` and `auth` variables in the code with the respective ones of your setup.
+
+```python
+url = 'http://<Raspberry Pi IP>:8123/api/services/google_assistant_sdk/send_text_command'
+auth = 'Bearer ******************************************************************************'
+```
 
 ## Demo
 
+![Final project deployment](.gitbook/assets/gesture-appliances-control-brainchip/setup-on.png)
+
+Here I show you the whole project working and controlling appliances when they are pointed.
+
+{% embed url="https://youtu.be/xLTo_sYCn9Y" %}
+
 ## Conclusion
+
+This project leverages the Brainchip Akida Neuromorphic Hardware Accelerator to propose an innovative solution to home automation. It can be optimized to work as a daily used gadget that may be at everyones house in the near future.
