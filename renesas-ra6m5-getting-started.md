@@ -84,7 +84,7 @@ To begin, you'll need to create an Edge Impulse account and a project in the Edg
 The next step is connecting our Renesas CK-RA6M5 board to the Edge Impulse Studio, so we can ingest sensor data for the machine learning model. Please follow the below steps to do so:
 
 - Connect the Renesas CK-RA6M5 board to the computer by following the steps mentioned in the _Quick Start_ section.
-- Open a terminal or command prompt and type `edge-impulse-daemon`. The [Edge Impulse daemon](https://docs.edgeimpulse.com/docs/Edge Impulse-cli/cli-daemon) will start and prompt for user credentials.
+- Open a terminal or command prompt and type `edge-impulse-daemon`. The [Edge Impulse daemon](https://docs.edgeimpulse.com/docs/edge-impulse-cli/cli-daemon) will start and prompt for user credentials.
 - After providing user credentials, it will prompt you to select an Edge Impulse project. Please navigate and select the project created in the previous steps, using the arrow keys.
 
 ![Daemon](.gitbook/assets/renesas-ra6m5-getting-started/daemon.jpg)
@@ -93,7 +93,7 @@ The next step is connecting our Renesas CK-RA6M5 board to the Edge Impulse Studi
 
 ![Device Naming](.gitbook/assets/renesas-ra6m5-getting-started/naming.jpg)
 
-- Now the board should be connected to the selected project. The `edge-impulse-daemon` will tell you which project the board is connected to. We can also verify by checking the devices tab of that project.
+- Now the board should be connected to the selected project. The `edge-impulse-daemon` will tell you which project the board is connected to. We can also verify by checking the **Devices** tab of that project.
 
 ![Device Connected](.gitbook/assets/renesas-ra6m5-getting-started/connected.jpg)
 
@@ -101,7 +101,7 @@ It will also list all the sensors available for data gathering.
 
 ## Data Gathering
 
-Edge impulse provides multiple options for data acquisition. In this getting started guide, we will look at the direct data ingestion from the board using `edge-impulse-daemon`. Please follow the below steps for data acquisition:
+Edge Impulse provides multiple options for [data acquisition](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition). In this Getting Started Guide, we will look at the direct data ingestion from the board using `edge-impulse-daemon`. Please follow the below steps for data acquisition:
 
 - Navigate to the _Data Acquisition_ tab in the Edge Impulse Studio.
 
@@ -113,15 +113,15 @@ Edge impulse provides multiple options for data acquisition. In this getting sta
 
 ![Data Collection Process](.gitbook/assets/renesas-ra6m5-getting-started/data-collection.gif)
 
-When enough samples are collected, [balance the data](https://docs.edgeimpulse.com/docs/Edge Impulse-studio/data-acquisition#dataset-train-test-split-ratio) and if required [clean the data](https://docs.edgeimpulse.com/docs/Edge Impulse-studio/data-acquisition#cropping-samples) as well.
+When enough samples are collected, [balance the data](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition#dataset-train-test-split-ratio) and if required [clean the data](https://docs.edgeimpulse.com/docs/edge-impulse-studio/data-acquisition#cropping-samples) as well.
 
 ![Dataset Train/Test Split](.gitbook/assets/renesas-ra6m5-getting-started/split.jpg)
 
 ## Machine Learning Model Preparation
 
-After data collection, the next step is machine learning model preparation. To do so, please navigate to the _Impulse design_ tab and add relevant [preprocessing](https://docs.edgeimpulse.com/docs/edge-impulse-studio/processing-blocks) and [learning blocks](https://docs.edgeimpulse.com/docs/edge-impulse-studio/learning-blocks) to the pipeline.
+After data collection, the next step is machine learning model preparation. To do so, please navigate to the [_Impulse design_ tab](https://docs.edgeimpulse.com/docs/edge-impulse-studio/impulse-design) and add relevant [preprocessing](https://docs.edgeimpulse.com/docs/edge-impulse-studio/processing-blocks) and [learning blocks](https://docs.edgeimpulse.com/docs/edge-impulse-studio/learning-blocks) to the pipeline.
 
-- Edge Impulse Studio will automatically add an [input block](https://docs.edgeimpulse.com/docs/edge-impulse-studio/impulse-design#input-block) and it will recommend a suitable preprocessing and a learning block based on the data type. I have used the recommended ones in this project with default arguments.
+- Edge Impulse Studio will automatically add an [input block](https://docs.edgeimpulse.com/docs/edge-impulse-studio/impulse-design#input-block) and it will recommend a suitable preprocessing and a learning block based on the data type. I have used the recommended ones in this project with the default arguments.
 
 ![Impulse Design](.gitbook/assets/renesas-ra6m5-getting-started/impulse-design.jpg)
 
@@ -137,7 +137,7 @@ Click on the _Save parameters_ button, then navigate to the _Generate features_ 
 
 ![Classifier Design](.gitbook/assets/renesas-ra6m5-getting-started/classifier-design.jpg)
 
-- Once the training is complete, please navigate to the [Model testing](https://docs.edgeimpulse.com/docs/Edge Impulse-studio/model-testing) tab, and click _Classify all_ button.
+- Once the training is complete, please navigate to the [Model testing](https://docs.edgeimpulse.com/docs/edge-impulse-studio/model-testing) tab, and click _Classify all_ button.
 
 ![Model Testing](.gitbook/assets/renesas-ra6m5-getting-started/model-testing.jpg)
 
@@ -147,9 +147,9 @@ After testing is finished, the Edge Impulse Studio will show the model accuracy,
 
 ## Deployment
 
-In this step, we will deploy our prepared model to the Renesas CK-RA6M5 board, so we can perform the inference locally on the board.
+In this step, we will deploy our prepared model to the Renesas CK-RA6M5 board, so we can perform inference locally on the board.
 
-- Please navigate to the [Deployment](https://docs.edgeimpulse.com/docs/Edge Impulse-studio/deployment) tab, select the Renesas CK-RA6M5 board using the search bar, and click on the _Build_ button.
+- Please navigate to the [Deployment](https://docs.edgeimpulse.com/docs/edge-impulse-studio/deployment) tab, select the Renesas CK-RA6M5 board using the search bar, and click on the _Build_ button.
 
 ![Deployment Tab](.gitbook/assets/renesas-ra6m5-getting-started/deployment.jpg)
 
